@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tower Defense</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="main-menu" class="menu-screen visible">
+  <h1>TOWER DEFENSE</h1>
+  <p class="menu-sub">Choose difficulty</p>
+  <div class="menu-buttons">
+    <button data-diff="easy">Easy &mdash; 15 waves</button>
+    <button data-diff="medium">Medium &mdash; 20 waves</button>
+    <button data-diff="hard">Hard &mdash; 25 waves</button>
+    <button data-diff="endless" style="border-color:#e67e22">Endless &mdash; &#8734;</button>
+  </div>
+  <button id="menu-skilltree" class="menu-st-btn">&#127919; Skill Tree</button>
+</div>
+
+<div id="skill-tree-screen" class="menu-screen">
+  <h2 style="color:#f1c40f;font-size:48px;margin-bottom:8px;letter-spacing:4px">SKILL TREE</h2>
+  <p style="color:#888;font-size:18px;margin-bottom:24px">Points: <span id="skill-points" style="color:#f1c40f;font-weight:bold">0</span></p>
+  <div id="st-cards" class="st-cards">
+    <div class="st-card">
+      <div class="st-name">Tower Limit</div>
+      <div class="st-desc">+1 max tower per level</div>
+      <div class="st-level">Level: <span id="st-level-maxTowers">0</span>/5</div>
+      <div id="st-dots-maxTowers" class="st-dots"></div>
+      <div class="st-cost">Cost: <span id="st-cost-maxTowers">1 pt</span></div>
+      <button id="st-btn-maxTowers" class="st-btn" onclick="upgradeSkillTree('maxTowers')">Upgrade</button>
+    </div>
+    <div class="st-card">
+      <div class="st-name">Starting Gold</div>
+      <div class="st-desc">+$50 starting coins per level</div>
+      <div class="st-level">Level: <span id="st-level-startCoins">0</span>/5</div>
+      <div id="st-dots-startCoins" class="st-dots"></div>
+      <div class="st-cost">Cost: <span id="st-cost-startCoins">1 pt</span></div>
+      <button id="st-btn-startCoins" class="st-btn" onclick="upgradeSkillTree('startCoins')">Upgrade</button>
+    </div>
+    <div class="st-card">
+      <div class="st-name">Discount</div>
+      <div class="st-desc">5% off tower cost per level</div>
+      <div class="st-level">Level: <span id="st-level-costReduction">0</span>/5</div>
+      <div id="st-dots-costReduction" class="st-dots"></div>
+      <div class="st-cost">Cost: <span id="st-cost-costReduction">1 pt</span></div>
+      <button id="st-btn-costReduction" class="st-btn" onclick="upgradeSkillTree('costReduction')">Upgrade</button>
+    </div>
+  </div>
+  <button id="st-back" class="menu-st-btn" style="margin-top:24px">&larr; Back</button>
+</div>
+
+<div id="game-container" style="display:none">
+  <div id="game-area">
+    <div id="hud">
+      <div class="stat hp">❤ HP: <span id="hp-display">20</span></div>
+      <div class="stat coins">💰 Coins: <span id="coins-display">200</span></div>
+      <div class="stat wave">🌊 Wave: <span id="wave-display">0</span>/<span id="total-waves">20</span></div>
+      <div class="stat wavetype">⚔ <span id="wave-type-display">-</span></div>
+      <div class="stat towers">🏛 Towers: <span id="towers-display">0</span>/<span id="max-towers">12</span></div>
+      <button id="speed-btn">1×</button>
+      <button id="start-wave">Start Wave</button>
+    </div>
+    <div id="canvas-container">
+      <canvas id="gameCanvas" width="900" height="600"></canvas>
+    </div>
+    <div id="game-over" class="overlay">
+      <h1>GAME OVER</h1>
+      <div class="sub">The kingdom has fallen...</div>
+      <div class="stat-grid">
+        <div class="stat-row">Waves: <span id="go-waves">0</span></div>
+        <div class="stat-row">Enemies Killed: <span id="go-kills">0</span></div>
+        <div class="stat-row">Coins Earned: <span id="go-coins">0</span></div>
+        <div class="stat-row">Towers Built: <span id="go-towers">0</span></div>
+      </div>
+      <div class="overlay-diff-buttons">
+        <button data-diff="easy" class="go-diff">Easy</button>
+        <button data-diff="medium" class="go-diff">Medium</button>
+        <button data-diff="hard" class="go-diff">Hard</button>
+        <button data-diff="endless" class="go-diff">Endless</button>
+      </div>
+      <button id="restart-go">Restart (same difficulty)</button>
+    </div>
+    <div id="victory" class="overlay">
+      <h1>VICTORY!</h1>
+      <div class="sub">All waves defeated!</div>
+      <div class="stat-grid">
+        <div class="stat-row">Waves: <span id="vic-waves">0</span></div>
+        <div class="stat-row">Enemies Killed: <span id="vic-kills">0</span></div>
+        <div class="stat-row">Coins Earned: <span id="vic-coins">0</span></div>
+        <div class="stat-row">Towers Built: <span id="vic-towers">0</span></div>
+      </div>
+      <div class="overlay-diff-buttons">
+        <button data-diff="easy" class="vic-diff">Easy</button>
+        <button data-diff="medium" class="vic-diff">Medium</button>
+        <button data-diff="hard" class="vic-diff">Hard</button>
+        <button data-diff="endless" class="vic-diff">Endless</button>
+      </div>
+      <button id="restart-vic">Restart (same difficulty)</button>
+    </div>
+  </div>
+
+  <div id="sidebar">
+    <div class="sidebar-title">Towers</div>
+    <div id="tower-inventory"></div>
+    <div id="tower-info" class="hidden">
+      <div class="info-divider"></div>
+      <div id="info-title" class="info-title"></div>
+      <div id="info-stats" class="info-stats"></div>
+      <div id="info-priority" class="prio-group"></div>
+      <div id="evolve-options" class="prio-group" style="display:none"></div>
+      <button id="upgrade-btn">Upgrade</button>
+      <button id="sell-btn">Sell</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/constants.js"></script>
+<script src="js/skills.js"></script>
+<script src="js/particle.js"></script>
+<script src="js/projectile.js"></script>
+<script src="js/Enemy/Enemy.js"></script>
+<script src="js/Enemy/Stunner.js"></script>
+<script src="js/Enemy/MegaTank.js"></script>
+<script src="js/Enemy/Boss.js"></script>
+<script src="js/Tower/Tower.js"></script>
+<script src="js/Tower/AttackTower/Archer.js"></script>
+<script src="js/Tower/AttackTower/Mage.js"></script>
+<script src="js/Tower/AttackTower/Mortar.js"></script>
+<script src="js/Tower/SupportTower/Ice.js"></script>
+<script src="js/Tower/SupportTower/Protection_Totem.js"></script>
+<script src="js/game.js"></script>
+<script src="js/renderer.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/input.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
